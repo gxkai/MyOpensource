@@ -1,11 +1,11 @@
 {
-  "name": "vue3-base-type",
-  "version": "0.1.14",
-  "description": "一个使用vue3+typescript 搭建的项目基础架构类型声明库",
+  "name": "AIChat",
+  "version": "0.1.01",
+  "description": "AI 聊天助手",
   "author": {
-    "name": "ibwei",
-    "email": "997132391@qq.com",
-    "url": "http://me.ibwei.com"
+    "name": "gxkai",
+    "email": "1378026744@qq.com",
+    "url": "ksgxk.top"
   },
   "scripts": {
     "serve": "vue-cli-service serve",
