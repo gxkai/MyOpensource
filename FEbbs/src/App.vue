@@ -17,7 +17,6 @@ const App = defineComponent({
     const fullLoading = computed(() => store.state.app.fullLoading)
     const loadingText = computed(() => store.state.app.loadingText)
     const currentLanguage = computed(() => Locales[store.state.app.language])
-    document.body.style.fontSize = '18px'
     return {
       currentLanguage,
       loadingText,
