@@ -5,6 +5,7 @@ const AppConfig = {
   $message: message
 }
 const StaticConfig = {
-  IconfontURL: '//at.alicdn.com/t/font_2092412_rr3rb5vksd8.js'
+  IconfontURL: '//at.alicdn.com/t/font_2092412_rr3rb5vksd8.js',
+  MaxPageSize: 15
 }
 export { AppConfig, StaticConfig }

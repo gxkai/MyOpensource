@@ -7,7 +7,10 @@ const state = {
   sidebarFold: false, // 侧边栏菜单是否折叠
   thirdPanelFold: true, // 第三级版面是否折叠
   teamDetaiPanel: '0', // 团队详情里 tabbar 当前活跃的 key
-  teamGroupType: 'all' // 成员分组当前选择
+  teamGroupType: 'all', // 成员分组当前选择
+  selectedTeam: {
+    id: 1
+  }
 }
 type ConsoleStateType = typeof state
 

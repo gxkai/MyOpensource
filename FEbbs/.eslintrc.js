@@ -15,7 +15,9 @@ module.exports = {
 		'@typescript-eslint/no-explicit-any': 'off',
 		'@typescript-eslint/member-delimiter-style': 'off',
 		'@typescript-eslint/no-var-requires': 'off',
-		'@typescript-eslint/ban-ts-ignore': 'off'
+		'@typescript-eslint/ban-ts-ignore': 'off',
+    '@typescript-eslint/no-unused-vars': 'off',
+    'no-unused-components': 'off',
 	},
 	extends: ['plugin:vue/vue3-essential', 'eslint:recommended', '@vue/typescript/recommended'],
 	overrides: [

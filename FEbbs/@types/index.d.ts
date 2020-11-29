@@ -143,3 +143,16 @@ export interface AddTeamGroupMemberParams {
   id?: number
   userId: number
 }
+
+export enum EDirection {
+  LEFT='LEFT',
+  RIGHT='RIGHT',
+}
+
+export interface IRecord {
+  id: string
+  time: string
+  direction: EDirection[]
+  description: string
+  checked: boolean
+}

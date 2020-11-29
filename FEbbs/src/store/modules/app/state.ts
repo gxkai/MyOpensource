@@ -1,4 +1,4 @@
-import { StateType } from '@types'
+import { IRecord, StateType } from '@types'
 import { Module } from 'vuex'
 
 const state = {
@@ -6,7 +6,17 @@ const state = {
   theme: 'light',
   version: '0.0.1',
   fullLoading: false,
-  loadingText: 'Loading...'
+  loadingText: 'Loading...',
+  group: {}
+} as {
+  language: string
+  theme: string
+  version: string
+  fullLoading: boolean
+  loadingText: string
+  group: {
+    [key: number]: IRecord[]
+  }
 }
 type AppStateType = typeof state
 

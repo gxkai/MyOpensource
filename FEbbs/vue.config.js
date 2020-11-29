@@ -64,7 +64,7 @@ const PRODUCTION = webpackConfig => {
 }
 
 module.exports = {
-  publicPath: IS_DEV ? '/' : '/vue3-ts-base',
+  publicPath: IS_DEV ? '/' : '/',
   css: {
     loaderOptions: {
       less: {
@@ -73,11 +73,20 @@ module.exports = {
         lessOptions: {
           javascriptEnabled: true
         }
+      },
+      css: {},
+      postcss: {
+        plugins: [
+          require('postcss-px2rem')({
+            remUnit: 37.5 //根据设计图
+            //375的图就给37.5，也就是1rem=37.5px
+          })
+        ]
       }
     }
   },
   devServer: {
-    proxy: 'http://10.10.10.115:8002'
+    proxy: ''
   },
   pluginOptions: {
     /** 全局加载less 的 webpack 插件  */

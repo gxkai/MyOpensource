@@ -1,7 +1,7 @@
 {
-  "name": "AIChat",
+  "name": "IRecord",
   "version": "0.1.01",
-  "description": "AI 聊天助手",
+  "description": "哺乳记录",
   "author": {
     "name": "gxkai",
     "email": "1378026744@qq.com",
@@ -18,7 +18,8 @@
     "test:unit": "vue-cli-service test:unit",
     "test-dev:unit": "vue-cli-service  test:unit --watch",
     "test:api": "vue-cli-service test:unit ./tests/api/*.spec.ts",
-    "test-dev:api": "vue-cli-service test:unit ./tests/api/*.spec.ts --watch"
+    "test-dev:api": "vue-cli-service test:unit ./tests/api/*.spec.ts --watch",
+    "publish": "npm run build && scp -r dist/ root@139.196.102.55:~"
   },
   "main": "dist/index.js",
   "files": [
@@ -30,13 +31,16 @@
     "ant-design-vue": "^2.0.0-beta.9",
     "axios": "^0.20.0",
     "core-js": "^3.6.5",
+    "lib-flexible": "^0.3.2",
     "moment": "^2.27.0",
+    "postcss-px2rem": "^0.3.0",
+    "vant": "^3.0.0-beta.10",
     "vue": "^3.0.0",
     "vue-class-component": "^8.0.0-0",
     "vue-composable": "^1.0.0-beta.10",
     "vue-router": "^4.0.0-0",
     "vuex": "^4.0.0-0",
-    "vuex-persistedstate": "^3.1.0"
+    "vuex-persistedstate": "^4.0.0-beta.1"
   },
   "devDependencies": {
     "@types/chai": "^4.2.11",
