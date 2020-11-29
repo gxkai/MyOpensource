@@ -1,5 +1,5 @@
-import { Dialog } from 'vant'
+import { Calendar, Dialog } from 'vant'
 
 export default function loadComponent(app: any) {
-  app.use(Dialog)
+  app.use(Dialog).use(Calendar)
 }

@@ -29,22 +29,27 @@
     <div class="list">
       <div
         class="list__item"
-        :class="item.id ? 'list__item--normal' : ''"
+        :class="showCheckbox ? 'list__item--normal' : ''"
         v-for="item in list"
         :key="item.id"
       >
-        <div class="list__item__checkbox" v-if="item.id">
+        <div class="list__item__checkbox" v-if="item.id && showCheckbox">
           <g-checkbox v-model="checkedList" :value="item.id" />
         </div>
         <div class="list__item__part-1">
           <div class="list__item__clock">
-            <g-timepicker v-model="item.time" />
+            <g-timepicker v-model="item.timeStart" />
           </div>
           <div class="list__item__check">
             <div class="list__item__direction">
               <g-checkbox value="LEFT" label="左" v-model="item.direction" />
               <g-checkbox value="RIGHT" label="右" v-model="item.direction" />
             </div>
+          </div>
+        </div>
+        <div class="list__item__part-2">
+          <div class="list__item__clock">
+            <g-timepicker v-model="item.timeEnd" />
           </div>
         </div>
         <div class="list__item__part-3">
@@ -62,17 +67,27 @@
             删除
           </button>
         </div>
-        <div class="list__item__part-2">
-          <textarea
-            class="list__item__description"
-            v-model="item.description"
-          />
-        </div>
       </div>
     </div>
-    <div class="footer" v-if="showFooter">
-      <div class="footer__part-1">
-        <g-checkbox v-model="checkedAll" />
+    <div class="footer">
+      <div class="footer__part-1" v-if="showFooter">
+        <div class="footer__part-1__left">
+          <g-checkbox v-model="checkedAll" v-if="showCheckbox" />
+          <button
+            class="button button--normal"
+            @click="showCheckbox = false"
+            v-if="showCheckbox"
+          >
+            取消
+          </button>
+          <button
+            class="button button--normal"
+            @click="showCheckbox = true"
+            v-else
+          >
+            管理
+          </button>
+        </div>
         <button
           class="button button--delete"
           @click="clickDeleteAll"
@@ -81,8 +96,26 @@
           删除
         </button>
       </div>
+      <div class="footer__part-2">
+        <textarea
+          class="footer__description"
+          v-model="description"
+          @change="forceUpdateGroup"
+        />
+      </div>
     </div>
   </div>
+  <div class="floating" @click="showCalendar = true">
+    <span>
+      更多
+    </span>
+  </div>
+  <van-calendar
+    v-model:show="showCalendar"
+    @confirm="confirmCalendar"
+    :min-date="minDate"
+    :max-date="maxDate"
+  />
 </template>
 <script lang="ts">
 import { computed, defineComponent } from 'vue'
@@ -103,6 +136,9 @@ const getTime = (date: Date) => {
 const getYMD = (date: Date) => {
   return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDay()}`
 }
+const getYMDDesc = (date: Date) => {
+  return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDay()}-desc`
+}
 const getDate = (date: Date, n: number) => {
   const newDate = new Date(date)
   newDate.setDate(newDate.getDate() + n)
@@ -120,7 +156,12 @@ const Home = defineComponent({
     }
     form: IRecord
     list: IRecord[]
+    description: string
     checkedList: string[]
+    showCheckbox: boolean
+    showCalendar: boolean
+    minDate: Date
+    maxDate: Date
   } {
     return {
       days: [0, 1, 2, 3, 4, 5, 6],
@@ -140,12 +181,19 @@ const Home = defineComponent({
       form: {
         id: '',
         time: getTime(new Date()),
+        timeStart: getTime(new Date()),
+        timeEnd: getTime(new Date()),
         direction: [],
         description: '',
         checked: false
       },
       list: [],
-      checkedList: []
+      description: '',
+      checkedList: [],
+      showCheckbox: false,
+      showCalendar: false,
+      minDate: new Date(2000, 0, 1),
+      maxDate: new Date(2100, 0, 1)
     }
   },
   computed: {
@@ -174,10 +222,7 @@ const Home = defineComponent({
     list: {
       deep: true,
       handler() {
-        const list = (this as any).list.filter((e: IRecord) => e.id)
-        const newList = JSON.parse(JSON.stringify(store.state.app.group))
-        newList[getYMD(this.selectedDate)] = list
-        setStoreState('app', 'group', newList)
+        this.forceUpdateGroup()
       }
     }
   },
@@ -186,12 +231,30 @@ const Home = defineComponent({
     this.getList()
   },
   methods: {
+    forceUpdateGroup() {
+      const list = (this as any).list.filter((e: IRecord) => e.id)
+      const newGroup = JSON.parse(JSON.stringify(store.state.app.group))
+      newGroup[getYMD(this.selectedDate)] = list
+      newGroup[getYMDDesc(this.selectedDate)] = this.description
+      setStoreState('app', 'group', JSON.parse(JSON.stringify(newGroup)))
+    },
     getList() {
-      this.list =
+      const newList =
         JSON.parse(JSON.stringify(store.state.app.group))[
           getYMD(this.selectedDate)
         ] ?? []
+      this.description =
+        JSON.parse(JSON.stringify(store.state.app.group))[
+          getYMDDesc(this.selectedDate)
+        ] ?? ''
+      newList.forEach((e: IRecord) => {
+        e.timeStart = e.timeStart ?? ''
+        e.timeEnd = e.timeEnd ?? ''
+      })
+      this.list = newList
       this.form.time = getTime(new Date())
+      this.form.timeStart = getTime(new Date())
+      this.form.timeEnd = getTime(new Date())
       this.list.unshift(this.form)
     },
     getDateGroup() {
@@ -235,6 +298,12 @@ const Home = defineComponent({
         this.list = this.list.filter(e => e.id !== record.id)
         this.checkedList = this.checkedList.filter(e => e !== record.id)
       })
+    },
+    confirmCalendar(date: Date) {
+      this.showCalendar = false
+      this.selectedDate = date
+      this.getDateGroup()
+      this.getList()
     }
   }
 })
@@ -255,6 +324,18 @@ export default Home
     display: flex;
     align-items: center;
     justify-content: space-between;
+    margin-bottom: 10px;
+    &__left {
+      display: flex;
+    }
+  }
+  &__description {
+    width: 100%;
+    min-height: 100px;
+    &:focus {
+      outline: none;
+      border: none;
+    }
   }
 }
 .days {
@@ -321,7 +402,7 @@ export default Home
       position: absolute;
       left: 0;
       transform: translateX(50%);
-      top: 50%;
+      top: 30%;
     }
     &--normal {
       padding-left: 50px;
@@ -338,14 +419,6 @@ export default Home
       margin-top: 10px;
       display: flex;
       justify-content: flex-end;
-    }
-    &__description {
-      width: 100%;
-      min-height: 100px;
-      &:focus {
-        outline: none;
-        border: none;
-      }
     }
     &__direction {
       display: flex;
@@ -378,6 +451,10 @@ button {
   }
   & + .button {
     margin-left: 10px;
+  }
+  &--normal {
+    color: #ffffff;
+    background-color: @primary-color;
   }
   &--cancel,
   &--delete {
@@ -435,5 +512,18 @@ button {
     left: 50%;
     top: 0;
   }
+}
+.floating {
+  position: fixed;
+  right: 20px;
+  bottom: 180px;
+  display: grid;
+  place-items: center;
+  box-shadow: @box-shadow-base;
+  background-color: #0058a3;
+  color: #ffffff;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
 }
 </style>

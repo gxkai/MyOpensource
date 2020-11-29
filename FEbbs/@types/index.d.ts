@@ -152,6 +152,8 @@ export enum EDirection {
 export interface IRecord {
   id: string
   time: string
+  timeStart: string
+  timeEnd: string
   direction: EDirection[]
   description: string
   checked: boolean

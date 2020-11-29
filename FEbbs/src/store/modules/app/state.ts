@@ -15,7 +15,7 @@ const state = {
   fullLoading: boolean
   loadingText: string
   group: {
-    [key: number]: IRecord[]
+    [key: number]: IRecord[] | string
   }
 }
 type AppStateType = typeof state
