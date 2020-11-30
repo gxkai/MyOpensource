@@ -54,11 +54,11 @@ export default defineComponent({
   display: flex;
   align-items: center;
   &__input {
-    width: 40px;
+    width: 20px;
     height: 20px;
   }
   &__colon {
-    margin: 0 10px;
+    margin: 0 2px;
   }
 }
 </style>

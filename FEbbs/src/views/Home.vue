@@ -26,7 +26,48 @@
         </div>
       </div>
     </div>
-    <div class="list">
+    <div class="list" ref="list">
+      <div class="list__item list__item__add" @click="clickAdd">
+        <svg
+          width="20"
+          height="20"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <line
+            x1="10"
+            y1="10"
+            x2="10"
+            y2="0"
+            stroke-width="4px"
+            style="stroke: #0058a3"
+          />
+          <line
+            x1="10"
+            y1="10"
+            x2="10"
+            y2="20"
+            stroke-width="4px"
+            style="stroke: #0058a3"
+          />
+          <line
+            x1="10"
+            y1="10"
+            x2="0"
+            y2="10"
+            stroke-width="4px"
+            style="stroke: #0058a3"
+          />
+          <line
+            x1="10"
+            y1="10"
+            x2="20"
+            y2="10"
+            stroke-width="4px"
+            style="stroke: #0058a3"
+          />
+        </svg>
+      </div>
       <div
         class="list__item"
         :class="showCheckbox ? 'list__item--normal' : ''"
@@ -39,6 +80,8 @@
         <div class="list__item__part-1">
           <div class="list__item__clock">
             <g-timepicker v-model="item.timeStart" />
+            <span class="list__item__clock__divide">-</span>
+            <g-timepicker v-model="item.timeEnd" />
           </div>
           <div class="list__item__check">
             <div class="list__item__direction">
@@ -46,26 +89,6 @@
               <g-checkbox value="RIGHT" label="右" v-model="item.direction" />
             </div>
           </div>
-        </div>
-        <div class="list__item__part-2">
-          <div class="list__item__clock">
-            <g-timepicker v-model="item.timeEnd" />
-          </div>
-        </div>
-        <div class="list__item__part-3">
-          <button class="button button--clear" @click="clickClear(item)">
-            清空
-          </button>
-          <button class="button button--add" @click="clickAdd" v-if="!item.id">
-            添加
-          </button>
-          <button
-            class="button button--delete"
-            @click="clickDelete(item)"
-            v-else
-          >
-            删除
-          </button>
         </div>
       </div>
     </div>
@@ -124,6 +147,7 @@ import store from '@/store'
 import { uuid } from '@/utils/common'
 import { setStoreState } from '@/store/utils'
 import { Dialog } from 'vant'
+import { nextTick } from '@vue/composition-api'
 
 const getTime = (date: Date) => {
   const h = date.getHours()
@@ -255,7 +279,7 @@ const Home = defineComponent({
       this.form.time = getTime(new Date())
       this.form.timeStart = getTime(new Date())
       this.form.timeEnd = getTime(new Date())
-      this.list.unshift(this.form)
+      // this.list.unshift(this.form)
     },
     getDateGroup() {
       // 上一个周日日期
@@ -271,10 +295,11 @@ const Home = defineComponent({
     clickAdd() {
       const newForm = JSON.parse(JSON.stringify(this.form))
       newForm.id = uuid()
-      this.list.splice(1, 0, newForm)
-      this.form.time = getTime(new Date())
-      this.form.direction = []
-      this.form.id = ''
+      newForm.time = getTime(new Date())
+      newForm.timeStart = getTime(new Date())
+      newForm.timeEnd = getTime(new Date())
+      newForm.direction = []
+      this.list.push(newForm)
     },
     clickDeleteAll() {
       Dialog.confirm({
@@ -390,14 +415,16 @@ export default Home
   background-color: white;
   overflow-y: auto;
   &__item {
-    & + & {
-      margin-top: 10px;
-    }
+    margin-top: 10px;
     background-color: #ffffff;
     box-shadow: @box-shadow-base;
     border-radius: 10px;
     padding: 10px 20px 10px 20px;
     position: relative;
+    &__add {
+      display: grid;
+      place-items: center;
+    }
     &__checkbox {
       position: absolute;
       left: 0;
@@ -406,6 +433,13 @@ export default Home
     }
     &--normal {
       padding-left: 50px;
+    }
+    &__clock {
+      display: flex;
+      align-items: center;
+      &__divide {
+        margin: 0 2px;
+      }
     }
     &__part-1 {
       display: flex;
