@@ -1,0 +1,41 @@
+@import './variables.less';
+
+
+button {
+  -webkit-appearance: none;
+  outline: none;
+  border: none;
+}
+.button {
+  height: 20px;
+  padding: 2px 10px;
+  display: flex;
+  align-items: center;
+  border-radius: 5px;
+  font-size: 16px;
+  &:disabled {
+    background-color: @disabled-color;
+  }
+  & + .button {
+    margin-left: 10px;
+  }
+  &--normal {
+    color: #ffffff;
+    background-color: @primary-color;
+  }
+  &--cancel,
+  &--danger,
+  &--delete {
+    color: #ffffff;
+    background-color: @error-color;
+  }
+  &--clear {
+    background-color: @warning-color;
+    color: #ffffff;
+  }
+  &--ok,
+  &--add {
+    color: #ffffff;
+    background-color: @success-color;
+  }
+}

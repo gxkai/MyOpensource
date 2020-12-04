@@ -1,0 +1,232 @@
+<template>
+  <view class="calendar">
+    <view class="calendar__overlay"></view>
+    <view class="calendar__popup">
+      <view class="calendar__wrap">
+        <view class="calendar__header">
+          <view class="calendar__header__title">
+            日期选择
+          </view>
+          <view class="calendar__header__subtitle">
+            2020年12月
+          </view>
+          <view class="calendar__header__weekdays">
+            <view class="calendar__header__weekday" v-for="(weekday,index) in weekdays" :key="index">
+              {{weekday}}
+            </view>
+          </view>
+          <image class="calendar__header__close" src="@/assets/svg/close.svg" alt=""/>
+        </view>
+        <view class="calendar__body">
+            <view class="calendar__month" v-for="(month,index) in months" :key="index">
+              <view class="calendar__month__title">
+                {{month.y}}年{{month.m}}月
+              </view>
+              <view class="calendar__days">
+                <view class="calendar__days__mark">
+                  {{month.m}}
+                </view>
+                <view v-if="showDays(month)">
+                  <view class="calendar__day" v-for="(item, index) in getDays(month)" :key="index">
+                    <view v-for="x in 6" :key="index">
+                      <view v-if="x === item.wd">
+                        {{item.d}}
+                      </view>
+                      <view v-else></view>
+                    </view>
+                  </view>
+                </view>
+              </view>
+            </view>
+        </view>
+        <view class="calendar__footer">
+          <button class="button button--danger">确定</button>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script lang="ts">
+  interface IMon {y: number, m: number}
+  const getMonths = (minDate: Date, maxDate: Date)=> {
+    const result: IMon[] = [];
+    const curr = minDate;
+    while(curr <= maxDate){
+      let month = curr.getMonth();
+      result.push({
+        y: curr.getFullYear(),
+        m: month + 1,
+      });
+      curr.setMonth(month+1);
+    }
+    return result;
+  }
+  import { defineComponent } from 'vue'
+  export default defineComponent({
+    props: {
+      minDate: {
+        type: Date,
+        default: new Date(2000, 0, 1)
+      },
+      maxDate: {
+        type: Date,
+        default: new Date(2100, 0, 1)
+      }
+    },
+    data() {
+      return {
+        weekdays: ['日','一','二','三','四','五','六'],
+        months: [],
+        curMonth: new Date(2020, 11)
+      }
+    },
+    created(): void {
+      this.months = getMonths(this.minDate, this.maxDate)
+    },
+    methods: {
+      showDays(month: IMon) {
+        const sD = new Date()
+        sD.setFullYear(month.y, month.m, 1)
+        const cD = this.curMonth
+        cD.setFullYear(cD.getFullYear(), cD.getMonth() -1)
+      },
+      getDays(month: IMon) {
+        const  arr: {
+          wd: number
+          d: number
+          t: Date
+        }[] = []
+        const  sD = new  Date()
+        sD.setFullYear(month.y, month.m, 1)
+
+        const  eD = new  Date()
+        eD.setFullYear(month.y, month.m + 1, 1)
+
+        while (sD < eD) {
+          arr.push({
+            wd: sD.getDay(),
+            d: sD.getDate(),
+            t: sD
+          })
+          sD.setDate(sD.getDate() + 1)
+        }
+        return arr
+      }
+    }
+  })
+</script>
+<style lang="less">
+  @import "../../styles/index";
+  .calendar {
+    &__overlay {
+      position: fixed;
+      bottom: 0;
+      right: 0;
+      top: 0;
+      left: 0;
+      background-color: rgba(0,0,0,.7);
+      z-index: 2002;
+    }
+    &__popup {
+      z-index: 2002;
+      height: 80%;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      position: fixed;
+      background-color: #ffffff;
+      overflow-y: auto;
+      transition: transform .3s,-webkit-transform .3s;
+      border-radius: 10px 10px 0 0;
+    }
+    &__wrap {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    &__body {
+      flex: 1;
+      overflow-y: auto;
+    }
+    &__month {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      &__title {
+        text-align: center;
+        height: 60px;
+        line-height: 30px;
+        font-size: 14px;
+        font-weight: 500;
+      }
+    }
+    &__days {
+      position: relative;
+      height: 100%;
+      &__mark {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translateX(-50%) translateY(-50%);
+        font-size: 150px;
+        color: #666666;
+        opacity: 0.2;
+      }
+    }
+    &__day {
+
+    }
+    &__footer {
+      text-align: center;
+      padding: 5px 0;
+      .button {
+        margin: 0 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 40px;
+        height: 40px;
+        font-size: 16px;
+      }
+    }
+    &__header {
+      position: relative;
+      box-shadow: 0 0.053333rem 0.266667rem rgba(125,126,128,.16);
+      &__title {
+        font-size: 16px;
+        height: 40px;
+        font-weight: 500;
+        line-height: 40px;
+        text-align: center;
+      }
+      &__subtitle {
+        height: 60px;
+        font-weight: 500;
+        line-height: 60px;
+        text-align: center;
+        font-size: 14px;
+      }
+      &__close {
+        width: 15px;
+        height: 15px;
+        position: absolute;
+        right: 15px;
+        top: 15px;
+      }
+      &__weekdays {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 40px;
+        padding: 0 20px;
+      }
+      &__weebday {
+        flex: 1;
+        font-size: 12px;
+        line-height: 12px;
+        text-align: center;
+      }
+    }
+  }
+</style>
