@@ -20,20 +20,20 @@
         <scroll-view class="calendar__body"  @scroll="scrollFunc" scroll-y="true" :scroll-top="scrollTop">
             <view class="calendar__month" v-for="(month,index) in months" :key="index">
               <view class="calendar__month__title">
-                {{month.y}}年{{month.m}}月
+                {{month.getFullYear()}}年{{month.getMonth() + 1}}月
               </view>
               <view class="calendar__days">
                 <view class="calendar__days__mark">
-                  {{month.m}}
+                  {{month.getMonth() + 1}}
                 </view>
-                <view v-if="showDays(month)" class="calendar__day__wrap">
-                  <view class="calendar__day" v-for="x in getDays(month)[0].wd - 1" :key="x">
+                <view v-if="showMonths.includes(`${month.getFullYear()}-${month.getMonth()}`)" class="calendar__day__wrap">
+                  <view class="calendar__day" v-for="x in getDays(month)[0].getDay() - 1 < 0 ? 0 : getDays(month)[0].getDay() - 1" :key="x">
 
                   </view>
                   <view  v-for="(item, index) in getDays(month)" :key="'m' +index" class="calendar__day"
-                         :class="`${curDay.getFullYear()}-${curDay.getMonth() + 1}-${curDay.getDate()}` === `${item.t.getFullYear()}-${item.t.getMonth() + 1}-${item.t.getDate()}` ? 'calendar__day--selected' : ''"
+                         :class="`${curDay.getFullYear()}-${curDay.getMonth()}-${curDay.getDate()}` === `${item.getFullYear()}-${item.getMonth()}-${item.getDate()}` ? 'calendar__day--selected' : ''"
                   >
-                    {{item.d}}
+                    {{item.getDate()}}
                   </view>
                 </view>
               </view>
@@ -49,23 +49,17 @@
 
 <script lang="ts">
   import Taro from '@tarojs/taro'
-  interface IMon {y: number, m: number}
   const getMonths = (minDate: Date, maxDate: Date)=> {
-    const result: IMon[] = [];
+    const result: Date[] = [];
     const curr = new Date(minDate.valueOf());
     while(curr.getTime() <= maxDate.getTime()){
-      let month = curr.getMonth();
-      result.push({
-        y: curr.getFullYear(),
-        m: month + 1,
-      });
-      curr.setMonth(month+1);
+      result.push(new Date(curr.valueOf()));
+      curr.setMonth(curr.getMonth()+1);
     }
     return result;
   }
   import { defineComponent } from 'vue'
   let UNIT_HEIGHT = 0
-  let TOTAL_COUNT = 0
   export default defineComponent({
     props: {
       minDate: {
@@ -81,6 +75,7 @@
       return {
         weekdays: ['日','一','二','三','四','五','六'],
         months: [],
+        showMonths: [],
         curMonth: null,
         curDay: new Date(2001, 0, 1),
         scrollTop: 0
@@ -89,7 +84,6 @@
     created(): void {
       this.curMonth = new Date(this.curDay.getFullYear(), this.curDay.getMonth())
       this.months = getMonths(this.minDate, this.maxDate)
-      TOTAL_COUNT = this.maxDate.getFullYear() - this.minDate.getFullYear() + 1
     },
     mounted(): void {
       setTimeout(() => {
@@ -98,6 +92,7 @@
           UNIT_HEIGHT = rec.height
           const diffMon = this.diffMon(this.curDay, this.minDate)
           this.scrollTop = diffMon * UNIT_HEIGHT
+          this.showMonths = this.showMonthsFunc()
         }).exec()
       }, 100)
     },
@@ -107,38 +102,28 @@
       },
       scrollFunc(e) {
         const diff = Math.ceil(e.detail.scrollTop / UNIT_HEIGHT)
-        console.log(diff)
         const date = new Date(this.minDate.valueOf())
         date.setMonth(date.getMonth() + diff)
         this.curMonth = date
+        this.showMonths = this.showMonthsFunc()
       },
-      showDays(month: IMon) {
-        const nD = new Date(month.y, month.m - 1)
+      showMonthsFunc() {
         const cD = new Date(this.curMonth.valueOf())
         cD.setMonth(cD.getMonth() -1)
         const sD = new Date(cD.getFullYear(), cD.getMonth(), 1)
         cD.setMonth(cD.getMonth() + 2)
         const eD = new Date(cD.getFullYear(), cD.getMonth(), 0)
-        return nD.getTime() >=  sD.getTime() && nD.getTime() <= eD.getTime()
+        return [cD, sD, eD].map((e) => `${e.getFullYear()}-${e.getMonth()}`)
       },
-      getDays(month: IMon) {
-        const  arr: {
-          wd: number
-          d: number
-          t: Date
-        }[] = []
-        const  sD = new  Date()
-        sD.setFullYear(month.y, month.m - 1, 1)
-
-        const  eD = new  Date()
-        eD.setFullYear(month.y, month.m, 1)
-
-        while (sD < eD) {
-          arr.push({
-            wd: sD.getDay(),
-            d: sD.getDate(),
-            t: new Date(sD.valueOf())
-          })
+      getDays(month: Date) {
+        const  arr: Date[] = []
+        const last = new Date(month.valueOf())
+        last.setMonth(last.getMonth() + 1)
+        last.setDate(0)
+        const num = last.getDate()
+        const sD = new Date(month.valueOf())
+        for (let i =0;i< num;i++) {
+          arr.push(new Date(sD.valueOf()))
           sD.setDate(sD.getDate() + 1)
         }
         return arr
