@@ -17,7 +17,7 @@
           </view>
           <image class="calendar__header__close" src="@/assets/svg/close.svg" alt=""/>
         </view>
-        <view class="calendar__body">
+        <scroll-view class="calendar__body"  @scroll="scrollFunc" scroll-y="true" :scroll-top="scrollTop">
             <view class="calendar__month" v-for="(month,index) in months" :key="index">
               <view class="calendar__month__title">
                 {{month.y}}年{{month.m}}月
@@ -38,7 +38,7 @@
                 </view>
               </view>
             </view>
-        </view>
+        </scroll-view>
         <view class="calendar__footer">
           <button class="button button--danger">确定</button>
         </view>
@@ -48,13 +48,11 @@
 </template>
 
 <script lang="ts">
-  Date.prototype.clone=function(){
-    return new Date(this.valueOf());
-  }
+  import Taro from '@tarojs/taro'
   interface IMon {y: number, m: number}
   const getMonths = (minDate: Date, maxDate: Date)=> {
     const result: IMon[] = [];
-    const curr = minDate;
+    const curr = new Date(minDate.valueOf());
     while(curr.getTime() <= maxDate.getTime()){
       let month = curr.getMonth();
       result.push({
@@ -66,6 +64,8 @@
     return result;
   }
   import { defineComponent } from 'vue'
+  let UNIT_HEIGHT = 0
+  let TOTAL_COUNT = 0
   export default defineComponent({
     props: {
       minDate: {
@@ -81,21 +81,44 @@
       return {
         weekdays: ['日','一','二','三','四','五','六'],
         months: [],
-        curMonth: new Date(2000, 1),
-        curDay: new Date(2000, 0, 1),
+        curMonth: null,
+        curDay: new Date(2001, 0, 1),
+        scrollTop: 0
       }
     },
     created(): void {
+      this.curMonth = new Date(this.curDay.getFullYear(), this.curDay.getMonth())
       this.months = getMonths(this.minDate, this.maxDate)
+      TOTAL_COUNT = this.maxDate.getFullYear() - this.minDate.getFullYear() + 1
+    },
+    mounted(): void {
+      setTimeout(() => {
+        const query = Taro.createSelectorQuery()
+        query.select('.calendar__body').boundingClientRect(rec => {
+          UNIT_HEIGHT = rec.height
+          const diffMon = this.diffMon(this.curDay, this.minDate)
+          this.scrollTop = diffMon * UNIT_HEIGHT
+        }).exec()
+      }, 100)
     },
     methods: {
+      diffMon(date1:Date, date2:Date) {
+        return  Math.abs((date1.getFullYear() - date2.getFullYear()) * 12 + date1.getMonth() - date2.getMonth() )
+      },
+      scrollFunc(e) {
+        const diff = Math.ceil(e.detail.scrollTop / UNIT_HEIGHT)
+        console.log(diff)
+        const date = new Date(this.minDate.valueOf())
+        date.setMonth(date.getMonth() + diff)
+        this.curMonth = date
+      },
       showDays(month: IMon) {
         const nD = new Date(month.y, month.m - 1)
-        const cD = this.curMonth.clone()
+        const cD = new Date(this.curMonth.valueOf())
         cD.setMonth(cD.getMonth() -1)
         const sD = new Date(cD.getFullYear(), cD.getMonth(), 1)
         cD.setMonth(cD.getMonth() + 2)
-        const eD = new Date(cD.getFullYear(), cD.getMonth(), 1)
+        const eD = new Date(cD.getFullYear(), cD.getMonth(), 0)
         return nD.getTime() >=  sD.getTime() && nD.getTime() <= eD.getTime()
       },
       getDays(month: IMon) {
@@ -118,9 +141,6 @@
           })
           sD.setDate(sD.getDate() + 1)
         }
-        arr.forEach((e) => {
-          console.log(`${e.t.getFullYear()}-${e.t.getMonth() + 1}-${e.t.getDate()}`)
-        })
         return arr
       }
     }
