@@ -8,7 +8,7 @@
             日期选择
           </view>
           <view class="calendar__header__subtitle">
-            2020年12月
+            {{curMonth.getFullYear()}}年{{curMonth.getMonth() + 1}}月
           </view>
           <view class="calendar__header__weekdays">
             <view class="calendar__header__weekday" v-for="(weekday,index) in weekdays" :key="index">
@@ -26,14 +26,14 @@
                 <view class="calendar__days__mark">
                   {{month.m}}
                 </view>
-                <view v-if="showDays(month)">
-                  <view class="calendar__day" v-for="(item, index) in getDays(month)" :key="index">
-                    <view v-for="x in 6" :key="index">
-                      <view v-if="x === item.wd">
-                        {{item.d}}
-                      </view>
-                      <view v-else></view>
-                    </view>
+                <view v-if="showDays(month)" class="calendar__day__wrap">
+                  <view class="calendar__day" v-for="x in getDays(month)[0].wd - 1" :key="x">
+
+                  </view>
+                  <view  v-for="(item, index) in getDays(month)" :key="'m' +index" class="calendar__day"
+                         :class="`${curDay.getFullYear()}-${curDay.getMonth() + 1}-${curDay.getDate()}` === `${item.t.getFullYear()}-${item.t.getMonth() + 1}-${item.t.getDate()}` ? 'calendar__day--selected' : ''"
+                  >
+                    {{item.d}}
                   </view>
                 </view>
               </view>
@@ -48,11 +48,14 @@
 </template>
 
 <script lang="ts">
+  Date.prototype.clone=function(){
+    return new Date(this.valueOf());
+  }
   interface IMon {y: number, m: number}
   const getMonths = (minDate: Date, maxDate: Date)=> {
     const result: IMon[] = [];
     const curr = minDate;
-    while(curr <= maxDate){
+    while(curr.getTime() <= maxDate.getTime()){
       let month = curr.getMonth();
       result.push({
         y: curr.getFullYear(),
@@ -78,7 +81,8 @@
       return {
         weekdays: ['日','一','二','三','四','五','六'],
         months: [],
-        curMonth: new Date(2020, 11)
+        curMonth: new Date(2000, 1),
+        curDay: new Date(2000, 0, 1),
       }
     },
     created(): void {
@@ -86,10 +90,13 @@
     },
     methods: {
       showDays(month: IMon) {
-        const sD = new Date()
-        sD.setFullYear(month.y, month.m, 1)
-        const cD = this.curMonth
-        cD.setFullYear(cD.getFullYear(), cD.getMonth() -1)
+        const nD = new Date(month.y, month.m - 1)
+        const cD = this.curMonth.clone()
+        cD.setMonth(cD.getMonth() -1)
+        const sD = new Date(cD.getFullYear(), cD.getMonth(), 1)
+        cD.setMonth(cD.getMonth() + 2)
+        const eD = new Date(cD.getFullYear(), cD.getMonth(), 1)
+        return nD.getTime() >=  sD.getTime() && nD.getTime() <= eD.getTime()
       },
       getDays(month: IMon) {
         const  arr: {
@@ -98,19 +105,22 @@
           t: Date
         }[] = []
         const  sD = new  Date()
-        sD.setFullYear(month.y, month.m, 1)
+        sD.setFullYear(month.y, month.m - 1, 1)
 
         const  eD = new  Date()
-        eD.setFullYear(month.y, month.m + 1, 1)
+        eD.setFullYear(month.y, month.m, 1)
 
         while (sD < eD) {
           arr.push({
             wd: sD.getDay(),
             d: sD.getDate(),
-            t: sD
+            t: new Date(sD.valueOf())
           })
           sD.setDate(sD.getDate() + 1)
         }
+        arr.forEach((e) => {
+          console.log(`${e.t.getFullYear()}-${e.t.getMonth() + 1}-${e.t.getDate()}`)
+        })
         return arr
       }
     }
@@ -163,7 +173,9 @@
     }
     &__days {
       position: relative;
-      height: 100%;
+      flex: 1;
+      display: flex;
+      align-items: center;
       &__mark {
         position: absolute;
         top: 50%;
@@ -175,12 +187,28 @@
       }
     }
     &__day {
-
+      width: 100% / 6;
+      height: 50px;
+      text-align: center;
+      line-height: 50px;
+      &--selected {
+        background-color: @error-color;
+        color: #ffffff;
+        border-radius: 5px;
+      }
+      &__wrap {
+        display: flex;
+        flex-wrap: wrap;
+        height: calc(100% - 50px);
+      }
     }
     &__footer {
       text-align: center;
-      padding: 5px 0;
+      height: 50px;
+      display: flex;
+      align-items: center;
       .button {
+        width: 100%;
         margin: 0 20px;
         display: flex;
         align-items: center;
